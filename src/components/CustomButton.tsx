@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   TouchableOpacityProps,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 
 interface CustomButtonProps extends TouchableOpacityProps {
   title: string;
@@ -26,66 +28,80 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     <TouchableOpacity
       style={[
         styles.button,
-        variant === 'primary' ? styles.primaryButton : styles.secondaryButton,
         loading && styles.disabledButton,
         style,
       ]}
       disabled={loading}
       {...props}
     >
-      {loading ? (
-        <Text style={[styles.buttonText, variant === 'secondary' && styles.secondaryButtonText]}>
-          {loadingText}
-        </Text>
-      ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            variant === 'secondary' && styles.secondaryButtonText,
-          ]}
-        >
-          {title}
-        </Text>
-      )}
+      <LinearGradient
+        colors={variant === 'primary' ? 
+          COLORS.gradients.primary.colors : 
+          ['#ffffff', '#f8fafc']}
+        start={variant === 'primary' ? 
+          COLORS.gradients.primary.start : 
+          { x: 0, y: 0 }}
+        end={variant === 'primary' ? 
+          COLORS.gradients.primary.end : 
+          { x: 0, y: 1 }}
+        style={styles.gradientButton}
+      >
+        {loading ? (
+          <>
+            <ActivityIndicator 
+              size="small" 
+              color={variant === 'primary' ? COLORS.white : COLORS.primary} 
+              style={styles.spinner} 
+            />
+            <Text style={[
+              styles.buttonText, 
+              variant === 'secondary' && styles.secondaryButtonText
+            ]}>
+              {loadingText}
+            </Text>
+          </>
+        ) : (
+          <Text style={[
+            styles.buttonText, 
+            variant === 'secondary' && styles.secondaryButtonText
+          ]}>
+            {title}
+          </Text>
+        )}
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    height: 45,
-    borderRadius: 10,
+    height: 48,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    ...SHADOWS.medium,
+    elevation: 6,
+  },
+  gradientButton: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    paddingHorizontal: SPACING.lg,
   },
-  primaryButton: {
-    backgroundColor: '#1e40af',
-  },
-  secondaryButton: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#1e40af',
+  spinner: {
+    marginRight: SPACING.sm,
   },
   disabledButton: {
-    backgroundColor: '#9ca3af',
-    shadowOpacity: 0,
-    elevation: 0,
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold' as const,
+    fontSize: FONTS.sizes.base,
+    fontWeight: FONTS.weights.bold,
+    color: COLORS.white,
+    textAlign: 'center',
   },
   secondaryButtonText: {
-    color: '#1e40af',
+    color: COLORS.primary,
   },
 });
 

@@ -16,6 +16,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import CustomButton from './src/components/CustomButton';
 import CustomInput from './src/components/CustomInput';
@@ -117,15 +118,25 @@ export default function App() {
           showsVerticalScrollIndicator={false}
         >
           {/* Header Section */}
-          <View style={styles.header}>
+          <LinearGradient
+            colors={COLORS.gradients.primary.colors}
+            start={COLORS.gradients.primary.start}
+            end={COLORS.gradients.primary.end}
+            style={styles.header}
+          >
             <View style={styles.logoContainer}>
-              <View style={styles.logo}>
+              <LinearGradient
+                colors={COLORS.gradients.card.colors}
+                start={COLORS.gradients.card.start}
+                end={COLORS.gradients.card.end}
+                style={styles.logo}
+              >
                 <Text style={styles.logoText}>🏥</Text>
-              </View>
+              </LinearGradient>
             </View>
             <Text style={styles.appTitle}>सरकारी स्वास्थ्य पोर्टल</Text>
             <Text style={styles.subtitle}>स्वास्थ्य सेवाओं तक सुरक्षित पहुंच</Text>
-          </View>
+          </LinearGradient>
 
           {/* Login Form */}
           <View style={styles.formContainer}>
@@ -208,22 +219,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.xxl,
     paddingBottom: SPACING.lg,
-    backgroundColor: COLORS.primary,
     borderBottomLeftRadius: BORDER_RADIUS.xl,
     borderBottomRightRadius: BORDER_RADIUS.xl,
     marginBottom: SPACING.lg,
+    ...SHADOWS.medium,
   },
   logoContainer: {
     marginBottom: SPACING.md,
   },
   logo: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: COLORS.white,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOWS.medium,
+    ...SHADOWS.large,
+    elevation: 8,
   },
   logoText: {
     fontSize: 32,

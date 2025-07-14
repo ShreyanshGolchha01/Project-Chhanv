@@ -10,8 +10,12 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 import { Ionicons, MaterialIcons, FontAwesome5, Entypo } from '@expo/vector-icons';
+import SchemesScreen from './SchemesScreen';
+import ProfileScreen from './ProfileScreen';
+import ReportDetailsScreen from './ReportDetailsScreen';
 
 // Sample data for next camps
 const nextCamps = [
@@ -20,21 +24,21 @@ const nextCamps = [
     date: '15 अगस्त 2025',
     location: 'प्राथमिक स्वास्थ्य केंद्र, रायपुर',
     time: 'सुबह 9:00 बजे',
-    type: 'सामान्य जांच शिविर'
+    type: 'व्यापक स्वास्थ्य जांच शिविर'
   },
   {
     id: 2,
     date: '22 अगस्त 2025',
     location: 'सामुदायिक केंद्र, दुर्ग',
     time: 'सुबह 10:00 बजे',
-    type: 'नेत्र जांच शिविर'
+    type: 'संपूर्ण परिवारिक स्वास्थ्य शिविर'
   },
   {
     id: 3,
     date: '29 अगस्त 2025',
     location: 'जिला अस्पताल, बिलासपुर',
     time: 'सुबह 8:30 बजे',
-    type: 'हृदय जांच शिविर'
+    type: 'मल्टी-स्पेशलिटी हेल्थ कैंप'
   }
 ];
 
@@ -43,7 +47,7 @@ const previousReports = [
   {
     id: 1,
     date: '10 जुलाई 2025',
-    type: 'रक्त जांच',
+    type: 'व्यापक स्वास्थ्य जांच',
     status: 'सामान्य',
     doctor: 'डॉ. राम शर्मा',
     location: 'प्राथमिक स्वास्थ्य केंद्र'
@@ -51,7 +55,7 @@ const previousReports = [
   {
     id: 2,
     date: '25 जून 2025',
-    type: 'ब्लड प्रेशर',
+    type: 'संपूर्ण पारिवारिक जांच',
     status: 'सामान्य',
     doctor: 'डॉ. सुनीता पटेल',
     location: 'सामुदायिक केंद्र'
@@ -59,7 +63,7 @@ const previousReports = [
   {
     id: 3,
     date: '15 जून 2025',
-    type: 'मधुमेह जांच',
+    type: 'मल्टी-स्पेशलिटी चेकअप',
     status: 'ध्यान दें',
     doctor: 'डॉ. अमित गुप्ता',
     location: 'जिला अस्पताल'
@@ -67,10 +71,10 @@ const previousReports = [
   {
     id: 4,
     date: '05 जून 2025',
-    type: 'नेत्र जांच',
+    type: 'पूर्ण स्वास्थ्य परीक्षा',
     status: 'सामान्य',
     doctor: 'डॉ. प्रिया मिश्रा',
-    location: 'नेत्र चिकित्सालय'
+    location: 'मेडिकल कॉलेज'
   }
 ];
 
@@ -81,95 +85,26 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   const [activeTab, setActiveTab] = useState('home');
+  const [showSchemes, setShowSchemes] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showReportDetails, setShowReportDetails] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
-  const renderCampCard = ({ item }: { item: any }) => (
-    <View style={styles.campCard}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.campDate}>{item.date}</Text>
-        <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>नया</Text>
-        </View>
-      </View>
-      <Text style={styles.campType}>{item.type}</Text>
-      <View style={styles.cardInfo}>
-        <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="location" size={16} color={COLORS.primary} />
-          </View>
-          <Text style={styles.campLocation}>{item.location}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="time" size={16} color={COLORS.primary} />
-          </View>
-          <Text style={styles.campTime}>{item.time}</Text>
-        </View>
-      </View>
-    </View>
-  );
+  const renderContent = () => {
+    if (showReportDetails) {
+      return <ReportDetailsScreen onBack={() => setShowReportDetails(false)} reportData={selectedReport} />;
+    }
+    
+    if (showSchemes) {
+      return <SchemesScreen onBack={() => setShowSchemes(false)} />;
+    }
+    
+    if (showProfile) {
+      return <ProfileScreen onBack={() => setShowProfile(false)} onLogout={onLogout} />;
+    }
 
-  const renderReportCard = ({ item }: { item: any }) => (
-    <View style={styles.reportCard}>
-      <View style={styles.reportHeader}>
-        <Text style={styles.reportType}>{item.type}</Text>
-        <View style={[
-          styles.statusIndicator,
-          { backgroundColor: item.status === 'सामान्य' ? COLORS.healthGreen : COLORS.warning }
-        ]}>
-          <Text style={styles.reportStatus}>
-            {item.status}
-          </Text>
-        </View>
-      </View>
-      <View style={styles.reportInfo}>
-        <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="calendar" size={16} color={COLORS.primary} />
-          </View>
-          <Text style={styles.reportDate}>{item.date}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <FontAwesome5 name="user-md" size={14} color={COLORS.primary} />
-          </View>
-          <Text style={styles.reportDoctor}>{item.doctor}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <FontAwesome5 name="hospital" size={14} color={COLORS.primary} />
-          </View>
-          <Text style={styles.reportLocation}>{item.location}</Text>
-        </View>
-      </View>
-      <TouchableOpacity style={styles.viewReportButton} activeOpacity={0.8}>
-        <Text style={styles.viewReportText}>विस्तार देखें</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
-      
-      {/* Header with Navigation */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>स्वास्थ्य पोर्टल</Text>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => Alert.alert('सूचनाएं', 'कोई नई सूचना नहीं है।')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.notificationContainer}>
-              <Ionicons name="notifications" size={24} color={COLORS.white} />
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationCount}>3</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View>
-
+    // Default home content
+    return (
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
@@ -193,23 +128,173 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
         {/* Previous Reports Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>पिछली रिपोर्ट्स</Text>
-          <FlatList
-            data={previousReports}
-            renderItem={renderReportCard}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.reportsList}
-            inverted // This makes it scroll right to left
-          />
+          <View style={styles.reportsGrid}>
+            {previousReports.slice(0, 4).map((item, index) => (
+              <View key={item.id} style={styles.reportCardWrapper}>
+                {renderReportCard({ item })}
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
+    );
+  };
+
+  const renderCampCard = ({ item }: { item: any }) => (
+    <LinearGradient
+      colors={COLORS.gradients.card.colors}
+      start={COLORS.gradients.card.start}
+      end={COLORS.gradients.card.end}
+      style={styles.campCard}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.campDate}>{item.date}</Text>
+        <LinearGradient
+          colors={COLORS.gradients.accent.colors}
+          start={COLORS.gradients.accent.start}
+          end={COLORS.gradients.accent.end}
+          style={styles.statusBadge}
+        >
+          <Text style={styles.statusText}>नया</Text>
+        </LinearGradient>
+      </View>
+      <Text style={styles.campType}>{item.type}</Text>
+      <View style={styles.cardInfo}>
+        <View style={styles.infoRow}>
+          <LinearGradient
+            colors={[COLORS.primary + '20', COLORS.primary + '10']}
+            style={styles.iconContainer}
+          >
+            <Ionicons name="location" size={16} color={COLORS.primary} />
+          </LinearGradient>
+          <Text style={styles.campLocation}>{item.location}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <LinearGradient
+            colors={[COLORS.primary + '20', COLORS.primary + '10']}
+            style={styles.iconContainer}
+          >
+            <Ionicons name="time" size={16} color={COLORS.primary} />
+          </LinearGradient>
+          <Text style={styles.campTime}>{item.time}</Text>
+        </View>
+      </View>
+    </LinearGradient>
+  );
+
+  const getReportIconAndColor = (reportType: string) => {
+    if (reportType.includes('व्यापक')) {
+      return {
+        icon: 'medical-services',
+        colors: ['#8B5DFF', '#6B46C1'] as [string, string], // Purple
+      };
+    } else if (reportType.includes('संपूर्ण') || reportType.includes('पारिवारिक')) {
+      return {
+        icon: 'medical-services',
+        colors: ['#3B82F6', '#1E40AF'] as [string, string], // Blue
+      };
+    } else if (reportType.includes('मल्टी') || reportType.includes('स्पेशलिटी')) {
+      return {
+        icon: 'medical-services',
+        colors: ['#10B981', '#047857'] as [string, string], // Green
+      };
+    } else {
+      return {
+        icon: 'medical-services',
+        colors: ['#F59E0B', '#D97706'] as [string, string], // Orange
+      };
+    }
+  };
+
+  const renderReportCard = ({ item }: { item: any }) => {
+    const { icon, colors } = getReportIconAndColor(item.type);
+    
+    return (
+      <TouchableOpacity 
+        style={styles.reportCard}
+        activeOpacity={0.8}
+        onPress={() => {
+          setSelectedReport(item);
+          setShowReportDetails(true);
+        }}
+      >
+        <View style={styles.reportIconContainer}>
+          <LinearGradient
+            colors={colors}
+            style={styles.reportIcon}
+          >
+            <MaterialIcons name={icon as any} size={18} color="white" />
+          </LinearGradient>
+        </View>
+        <View style={styles.reportContent}>
+          <Text style={styles.reportTitle} numberOfLines={2}>{item.type}</Text>
+          <Text style={styles.reportSubtitle} numberOfLines={1}>{item.date}</Text>
+          <Text style={styles.reportDescription} numberOfLines={1}>{item.doctor}</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.detailButton}
+          onPress={() => {
+            setSelectedReport(item);
+            setShowReportDetails(true);
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.detailButtonText}>विस्तृत देखें</Text>
+          <Ionicons name="chevron-forward" size={12} color={COLORS.primary} />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+      
+      {/* Header with Navigation */}
+      <LinearGradient
+        colors={COLORS.gradients.primary.colors}
+        start={COLORS.gradients.primary.start}
+        end={COLORS.gradients.primary.end}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>
+            {showReportDetails ? 'विस्तृत रिपोर्ट' : 
+             showProfile ? 'प्रोफाइल' : 
+             showSchemes ? 'सरकारी योजनाएं' : 
+             'स्वास्थ्य पोर्टल'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => Alert.alert('सूचनाएं', 'कोई नई सूचना नहीं है।')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.notificationContainer}>
+              <Ionicons name="notifications" size={24} color={COLORS.white} />
+              <LinearGradient
+                colors={['#e74c3c', '#c0392b']}
+                style={styles.notificationBadge}
+              >
+                <Text style={styles.notificationCount}>3</Text>
+              </LinearGradient>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      {/* Dynamic Content */}
+      {renderContent()}
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity 
           style={[styles.navItem, activeTab === 'home' && styles.activeNavItem]}
-          onPress={() => setActiveTab('home')}
+          onPress={() => {
+            setActiveTab('home');
+            setShowSchemes(false);
+            setShowProfile(false);
+            setShowReportDetails(false);
+          }}
         >
           <Ionicons 
             name={activeTab === 'home' ? "home" : "home-outline"} 
@@ -222,7 +307,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
         
         <TouchableOpacity 
           style={[styles.navItem, activeTab === 'scheme' && styles.activeNavItem]}
-          onPress={() => setActiveTab('scheme')}
+          onPress={() => {
+            setActiveTab('scheme');
+            setShowSchemes(true);
+            setShowProfile(false);
+            setShowReportDetails(false);
+          }}
         >
           <MaterialIcons 
             name="assignment" 
@@ -236,12 +326,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
         <TouchableOpacity 
           style={[styles.navItem, activeTab === 'profile' && styles.activeNavItem]}
           onPress={() => {
-            if (activeTab === 'profile') {
-              // If already on profile, show logout option
-              onLogout();
-            } else {
-              setActiveTab('profile');
-            }
+            setActiveTab('profile');
+            setShowProfile(true);
+            setShowSchemes(false);
+            setShowReportDetails(false);
           }}
         >
           <Ionicons 
@@ -263,10 +351,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
-    ...SHADOWS.small,
+    ...SHADOWS.medium,
   },
   headerContent: {
     flexDirection: 'row',
@@ -294,14 +381,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: COLORS.error,
     borderRadius: 10,
     minWidth: 18,
     height: 18,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.white,
+    ...SHADOWS.small,
   },
   notificationCount: {
     fontSize: 10,
@@ -338,14 +425,14 @@ const styles = StyleSheet.create({
     paddingRight: SPACING.lg,
   },
   campCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.lg,
     marginRight: SPACING.md,
-    width: 300,
-    borderLeftWidth: 4,
+    width: 320,
+    borderLeftWidth: 5,
     borderLeftColor: COLORS.primary,
-    ...SHADOWS.medium,
+    ...SHADOWS.large,
+    elevation: 8,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -354,10 +441,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   statusBadge: {
-    backgroundColor: COLORS.healthGreen,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs / 2,
+    paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.round,
+    ...SHADOWS.small,
   },
   statusText: {
     fontSize: FONTS.sizes.xs,
@@ -373,13 +460,31 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary + '15',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.sm,
+    ...SHADOWS.small,
+  },
+  iconContainerSmall: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.xs,
+    ...SHADOWS.small,
+  },
+  iconContainerTiny: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.xs / 2,
+    ...SHADOWS.small,
   },
   infoIcon: {
     // Icon styling handled by vector icon props
@@ -409,37 +514,139 @@ const styles = StyleSheet.create({
   reportsList: {
     paddingRight: SPACING.lg,
   },
+  reportsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  reportCardWrapper: {
+    width: '48%',
+    marginBottom: SPACING.md,
+  },
   reportCard: {
     backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.lg,
-    marginRight: SPACING.md,
-    width: 280,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.healthGreen,
+    width: '100%',
+    height: 180,
+    ...SHADOWS.large,
+    elevation: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportIconContainer: {
+    marginBottom: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     ...SHADOWS.medium,
+  },
+  reportContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    marginBottom: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
+  },
+  reportTitle: {
+    fontSize: FONTS.sizes.sm,
+    fontWeight: FONTS.weights.bold,
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    marginBottom: SPACING.xs / 2,
+    lineHeight: 18,
+  },
+  reportSubtitle: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.xs / 2,
+  },
+  reportDescription: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  detailButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary + '10',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+    borderRadius: BORDER_RADIUS.sm,
+    paddingVertical: SPACING.xs / 2,
+    paddingHorizontal: SPACING.xs,
+    marginTop: SPACING.xs / 2,
+  },
+  detailButtonText: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: FONTS.weights.semibold,
+    marginRight: SPACING.xs / 3,
   },
   statusIndicator: {
     paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.round,
+    ...SHADOWS.small,
+  },
+  statusIndicatorCompact: {
+    paddingHorizontal: SPACING.xs,
     paddingVertical: SPACING.xs / 2,
     borderRadius: BORDER_RADIUS.round,
+    ...SHADOWS.small,
   },
   reportInfo: {
     marginBottom: SPACING.md,
   },
+  reportInfoCompact: {
+    marginBottom: SPACING.sm,
+    flex: 1,
+  },
+  infoRowCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+    paddingLeft: SPACING.xs,
+  },
   reportHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
+    alignItems: 'flex-start',
+    marginBottom: SPACING.xs,
   },
   reportType: {
     fontSize: FONTS.sizes.base,
     fontWeight: FONTS.weights.semibold,
     color: COLORS.textPrimary,
+    flex: 1,
+    marginRight: SPACING.xs,
+  },
+  reportTypeCompact: {
+    fontSize: FONTS.sizes.base,
+    fontWeight: FONTS.weights.bold,
+    color: COLORS.textPrimary,
+    flex: 1,
+    marginRight: SPACING.xs / 2,
+    lineHeight: 18,
+    marginBottom: SPACING.xs,
   },
   reportStatus: {
     fontSize: FONTS.sizes.xs,
+    fontWeight: FONTS.weights.bold,
+    color: COLORS.white,
+  },
+  reportStatusCompact: {
+    fontSize: 9,
     fontWeight: FONTS.weights.bold,
     color: COLORS.white,
   },
@@ -448,10 +655,52 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
+  reportDateSmall: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  reportDateTiny: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    flex: 1,
+    fontWeight: FONTS.weights.medium,
+  },
   reportDoctor: {
     fontSize: FONTS.sizes.sm,
     color: COLORS.textSecondary,
     flex: 1,
+  },
+  reportDoctorSmall: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+  reportDoctorTiny: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    flex: 1,
+    fontWeight: FONTS.weights.medium,
+  },
+  reportTimeTiny: {
+    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
+  },
+  reportAttentionTiny: {
+    fontSize: 9,
+    color: COLORS.warning,
+    fontStyle: 'italic',
+  },
+  dateTimeContainer: {
+    flex: 1,
+  },
+  doctorContainer: {
+    flex: 1,
+  },
+  buttonContainer: {
+    marginTop: 'auto',
+    paddingTop: SPACING.xs,
   },
   reportLocation: {
     fontSize: FONTS.sizes.sm,
@@ -467,9 +716,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.primary + '10',
   },
+  viewReportButtonSmall: {
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    alignItems: 'center',
+    backgroundColor: COLORS.primary + '10',
+    marginTop: SPACING.xs,
+  },
+  viewReportButtonTiny: {
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    alignItems: 'center',
+    backgroundColor: COLORS.primary + '10',
+  },
   viewReportText: {
     color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
+    fontWeight: FONTS.weights.bold,
+  },
+  viewReportTextSmall: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: FONTS.weights.bold,
+  },
+  viewReportTextTiny: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.xs,
     fontWeight: FONTS.weights.bold,
   },
   bottomNav: {

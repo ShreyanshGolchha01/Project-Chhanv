@@ -1,20 +1,33 @@
 export const COLORS = {
-  // Primary Health Theme Colors
-  primary: '#1e40af', // Deep Blue
-  primaryLight: '#3b82f6', // Light Blue
-  primaryDark: '#1e3a8a', // Darker Blue
+  // Professional Government Color Scheme
+  primary: '#1a365d',        // Deep navy blue - sophisticated
+  primaryLight: '#2c5282',   // Medium navy
+  primaryDark: '#0f2537',    // Darker navy
   
-  // Secondary Colors
-  secondary: '#0891b2', // Cyan Blue
-  secondaryLight: '#06b6d4', // Light Cyan
+  // Secondary professional colors
+  secondary: '#2b6cb0',      // Royal blue
+  secondaryLight: '#4299e1', // Bright blue
+  secondaryDark: '#1e4a72',  // Deep blue
   
-  // Health Related Colors
-  healthGreen: '#059669', // Medical Green
-  healthRed: '#dc2626', // Emergency Red
+  // Accent colors for highlights
+  accent: '#16a085',         // Professional teal
+  accentLight: '#48c9b0',    // Light teal
+  accentDark: '#138d75',     // Dark teal
   
-  // Neutral Colors
+  // Health specific colors
+  healthGreen: '#27ae60',    // Vibrant medical green
+  healthBlue: '#3498db',     // Clean medical blue
+  healthTeal: '#1abc9c',     // Fresh teal
+  
+  // Status colors
+  success: '#27ae60',
+  warning: '#f39c12',
+  error: '#e74c3c',
+  info: '#3498db',
+  
+  // Neutral palette
   white: '#ffffff',
-  black: '#000000',
+  black: '#2c3e50',
   gray: {
     50: '#f8fafc',
     100: '#f1f5f9',
@@ -28,20 +41,55 @@ export const COLORS = {
     900: '#0f172a',
   },
   
-  // Status Colors
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  info: '#3b82f6',
+  // Background system
+  background: '#f7fafc',     // Soft background
+  surface: '#ffffff',        // Card surfaces
+  overlay: 'rgba(26, 54, 93, 0.9)', // Dark overlay
   
-  // Background Colors
-  background: '#f8fafc',
-  surface: '#ffffff',
+  // Text hierarchy
+  textPrimary: '#2c3e50',    // Main text
+  textSecondary: '#34495e',  // Secondary text
+  textLight: '#7f8c8d',      // Light text
+  textMuted: '#95a5a6',      // Muted text
   
-  // Text Colors
-  textPrimary: '#374151',
-  textSecondary: '#6b7280',
-  textLight: '#9ca3af',
+  // Gradient combinations for modern look
+  gradients: {
+    primary: {
+      colors: ['#1a365d', '#2c5282'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 }
+    },
+    secondary: {
+      colors: ['#2b6cb0', '#4299e1'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 0 }
+    },
+    accent: {
+      colors: ['#16a085', '#27ae60'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 }
+    },
+    health: {
+      colors: ['#1abc9c', '#3498db'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 0 }
+    },
+    warm: {
+      colors: ['#e67e22', '#f39c12'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 }
+    },
+    cool: {
+      colors: ['#2980b9', '#3498db'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 0 }
+    },
+    card: {
+      colors: ['#ffffff', '#f8fafc'] as const,
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 1 }
+    }
+  },
 };
 
 export const FONTS = {

@@ -338,136 +338,140 @@ const SchemesScreen: React.FC<SchemesScreenProps> = ({ onBack }) => {
   );
 
   const renderContent = () => {
-    switch (activeSection) {
-      case 'new':
-        return (
-          <FlatList
-            data={newSchemes}
-            renderItem={renderNewSchemeCard}
-            keyExtractor={(item) => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContainer}
-          />
-        );
-      case 'applied':
-        return (
-          <FlatList
-            data={appliedSchemes}
-            renderItem={renderAppliedSchemeCard}
-            keyExtractor={(item) => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContainer}
-          />
-        );
-      case 'approved':
-        return (
-          <FlatList
-            data={approvedSchemes}
-            renderItem={renderApprovedSchemeCard}
-            keyExtractor={(item) => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContainer}
-          />
-        );
-      default:
-        return null;
-    }
+    const contentConfig = {
+      new: {
+        data: newSchemes,
+        renderItem: renderNewSchemeCard,
+      },
+      applied: {
+        data: appliedSchemes,
+        renderItem: renderAppliedSchemeCard,
+      },
+      approved: {
+        data: approvedSchemes,
+        renderItem: renderApprovedSchemeCard,
+      }
+    };
+
+    const currentConfig = contentConfig[activeSection as keyof typeof contentConfig];
+    
+    if (!currentConfig) return null;
+
+    return (
+      <View style={styles.content}>
+        <FlatList
+          data={currentConfig.data}
+          renderItem={currentConfig.renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          bounces={true}
+          overScrollMode="never"
+        />
+      </View>
+    );
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.rootContainer}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
       
-      {/* Section Tabs */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeSection === 'new' && styles.activeTab]}
-          onPress={() => setActiveSection('new')}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={activeSection === 'new' ? 
-              COLORS.gradients.primary.colors : 
-              ['transparent', 'transparent']}
-            style={styles.tabGradient}
+      <View style={styles.container}>
+        {/* Section Tabs */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeSection === 'new' && styles.activeTab]}
+            onPress={() => setActiveSection('new')}
+            activeOpacity={0.8}
           >
-            <MaterialIcons 
-              name="new-releases" 
-              size={18} 
-              color={activeSection === 'new' ? COLORS.white : COLORS.textSecondary} 
-            />
-            <Text style={[
-              styles.tabText, 
-              activeSection === 'new' && styles.activeTabText
-            ]}>
-              नई योजनाएं
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={activeSection === 'new' ? 
+                COLORS.gradients.primary.colors : 
+                ['transparent', 'transparent']}
+              style={styles.tabGradient}
+            >
+              <MaterialIcons 
+                name="new-releases" 
+                size={18} 
+                color={activeSection === 'new' ? COLORS.white : COLORS.textSecondary} 
+              />
+              <Text style={[
+                styles.tabText, 
+                activeSection === 'new' && styles.activeTabText
+              ]}>
+                नई योजनाएं
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeSection === 'applied' && styles.activeTab]}
-          onPress={() => setActiveSection('applied')}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={activeSection === 'applied' ? 
-              ['#f39c12', '#e67e22'] : 
-              ['transparent', 'transparent']}
-            style={styles.tabGradient}
+          <TouchableOpacity
+            style={[styles.tab, activeSection === 'applied' && styles.activeTab]}
+            onPress={() => setActiveSection('applied')}
+            activeOpacity={0.8}
           >
-            <MaterialIcons 
-              name="pending" 
-              size={18} 
-              color={activeSection === 'applied' ? COLORS.white : COLORS.textSecondary} 
-            />
-            <Text style={[
-              styles.tabText, 
-              activeSection === 'applied' && styles.activeTabText
-            ]}>
-              आवेदित
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={activeSection === 'applied' ? 
+                ['#f39c12', '#e67e22'] : 
+                ['transparent', 'transparent']}
+              style={styles.tabGradient}
+            >
+              <MaterialIcons 
+                name="pending" 
+                size={18} 
+                color={activeSection === 'applied' ? COLORS.white : COLORS.textSecondary} 
+              />
+              <Text style={[
+                styles.tabText, 
+                activeSection === 'applied' && styles.activeTabText
+              ]}>
+                आवेदित
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeSection === 'approved' && styles.activeTab]}
-          onPress={() => setActiveSection('approved')}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={activeSection === 'approved' ? 
-              ['#27ae60', '#2ecc71'] : 
-              ['transparent', 'transparent']}
-            style={styles.tabGradient}
+          <TouchableOpacity
+            style={[styles.tab, activeSection === 'approved' && styles.activeTab]}
+            onPress={() => setActiveSection('approved')}
+            activeOpacity={0.8}
           >
-            <Ionicons 
-              name="checkmark-done-circle" 
-              size={18} 
-              color={activeSection === 'approved' ? COLORS.white : COLORS.textSecondary} 
-            />
-            <Text style={[
-              styles.tabText, 
-              activeSection === 'approved' && styles.activeTabText
-            ]}>
-              स्वीकृत
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+            <LinearGradient
+              colors={activeSection === 'approved' ? 
+                ['#27ae60', '#2ecc71'] : 
+                ['transparent', 'transparent']}
+              style={styles.tabGradient}
+            >
+              <Ionicons 
+                name="checkmark-done-circle" 
+                size={18} 
+                color={activeSection === 'approved' ? COLORS.white : COLORS.textSecondary} 
+              />
+              <Text style={[
+                styles.tabText, 
+                activeSection === 'approved' && styles.activeTabText
+              ]}>
+                स्वीकृत
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
 
-      {/* Content */}
-      <View style={styles.content}>
+        {/* Content */}
         {renderContent()}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  rootContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -517,6 +521,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...SHADOWS.large,
     elevation: 8,
+    borderWidth: 0.4,
+    borderColor: '#000000',
   },
   cardHeader: {
     marginBottom: SPACING.md,

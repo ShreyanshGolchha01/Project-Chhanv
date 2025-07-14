@@ -87,6 +87,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [showSchemes, setShowSchemes] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showReports, setShowReports] = useState(false);
   const [showReportDetails, setShowReportDetails] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -126,6 +127,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
     
     if (showSchemes) {
       return <SchemesScreen onBack={() => setShowSchemes(false)} />;
+    }
+    
+    if (showReports) {
+      return <ReportDetailsScreen onBack={() => setShowReports(false)} reportData={null} />;
     }
     
     if (showProfile) {
@@ -389,6 +394,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
             setActiveTab('scheme');
             setShowSchemes(true);
             setShowProfile(false);
+            setShowReports(false);
             setShowReportDetails(false);
           }}
         >
@@ -400,6 +406,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
           />
           <Text style={[styles.navText, activeTab === 'scheme' && styles.activeNavText]}>योजना</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'reports' && styles.activeNavItem]}
+          onPress={() => {
+            setActiveTab('reports');
+            setShowReports(true);
+            setShowSchemes(false);
+            setShowProfile(false);
+            setShowReportDetails(false);
+          }}
+        >
+          <MaterialIcons 
+            name="description" 
+            size={22} 
+            color={activeTab === 'reports' ? COLORS.primary : COLORS.textSecondary}
+            style={[styles.navIcon, activeTab === 'reports' && styles.activeNavIcon]} 
+          />
+          <Text style={[styles.navText, activeTab === 'reports' && styles.activeNavText]}>रिपोर्ट्स</Text>
+        </TouchableOpacity>
         
         <TouchableOpacity 
           style={[styles.navItem, activeTab === 'profile' && styles.activeNavItem]}
@@ -407,6 +432,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
             setActiveTab('profile');
             setShowProfile(true);
             setShowSchemes(false);
+            setShowReports(false);
             setShowReportDetails(false);
           }}
         >
@@ -858,18 +884,26 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.gray[200],
     ...SHADOWS.small,
     elevation: 8,
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   navItem: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
     marginHorizontal: SPACING.xs,
+    borderRadius: 50,
+    width: '100%',
+    aspectRatio: 1,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    maxWidth: 60,
   },
   activeNavItem: {
     backgroundColor: COLORS.primary + '15',
     borderWidth: 1,
     borderColor: COLORS.primary + '30',
+    borderRadius: 50,
   },
   navIcon: {
     marginBottom: SPACING.xs,

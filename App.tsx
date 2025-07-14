@@ -113,10 +113,7 @@ export default function App() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.staticContainer}>
           {/* Header Section */}
           <LinearGradient
             colors={COLORS.gradients.primary.colors}
@@ -198,7 +195,7 @@ export default function App() {
             <Text style={styles.versionText}>संस्करण 1.0.0</Text>
             <Text style={styles.poweredByText}>Powered by SSIPMT, RAIPUR</Text>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -209,19 +206,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    minHeight: height,
+  staticContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   header: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + SPACING.md : SPACING.lg,
     paddingBottom: SPACING.lg,
     borderBottomLeftRadius: BORDER_RADIUS.xl,
     borderBottomRightRadius: BORDER_RADIUS.xl,
-    marginBottom: SPACING.lg,
+    backgroundColor: COLORS.primary,
     ...SHADOWS.medium,
   },
   logoContainer: {
@@ -253,10 +249,10 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
+    paddingVertical: SPACING.xl,
   },
   welcomeContainer: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
     alignItems: 'center',
   },
   welcomeTitle: {
@@ -266,18 +262,19 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   welcomeSubtitle: {
-    fontSize: FONTS.sizes.xs,
+    fontSize: FONTS.sizes.sm,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   loginButton: {
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
   footer: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xl : SPACING.lg,
+    backgroundColor: COLORS.background,
   },
   footerText: {
     fontSize: FONTS.sizes.xs,

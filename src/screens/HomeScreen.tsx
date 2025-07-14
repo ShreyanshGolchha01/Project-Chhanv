@@ -89,6 +89,35 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showReportDetails, setShowReportDetails] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(3);
+  
+  // Add ref for auto scroll
+  const flatListRef = React.useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto scroll function
+  React.useEffect(() => {
+    const scrollInterval = setInterval(() => {
+      if (flatListRef.current && nextCamps.length > 0) {
+        const nextIndex = (currentIndex + 1) % nextCamps.length;
+        flatListRef.current.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        setCurrentIndex(nextIndex);
+      }
+    }, 3500); // Change slide every 4 seconds
+
+    return () => clearInterval(scrollInterval);
+  }, [currentIndex]);
+
+  const handleScroll = (event: any) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / 360); // 360 is the card width
+    if (currentIndex !== index) {
+      setCurrentIndex(index);
+    }
+  };
 
   const renderContent = () => {
     if (showReportDetails) {
@@ -108,33 +137,51 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>स्वागत है</Text>
-          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.welcomeText}>नमस्ते,</Text>
+          <Text style={styles.userName}>{userName.split(' ')[0]} जी</Text>
         </View>
 
         {/* Next Camps Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>आगामी शिविर</Text>
           <FlatList
+            ref={flatListRef}
             data={nextCamps}
             renderItem={renderCampCard}
             keyExtractor={(item) => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.campsList}
+            onScroll={handleScroll}
+            snapToAlignment="center"
+            snapToInterval={310 + SPACING.md} // Card width + margin
+            decelerationRate={0.8}
+            snapToOffsets={nextCamps.map((_, index) => index * (310 + SPACING.md))}
+            onScrollToIndexFailed={() => {}}
+            pagingEnabled={false}
           />
         </View>
 
         {/* Previous Reports Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>पिछली रिपोर्ट्स</Text>
-          <View style={styles.reportsGrid}>
-            {previousReports.slice(0, 4).map((item, index) => (
-              <View key={item.id} style={styles.reportCardWrapper}>
-                {renderReportCard({ item })}
-              </View>
-            ))}
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>पिछली रिपोर्ट्स</Text>
+            <TouchableOpacity 
+              onPress={() => setShowReportDetails(true)}
+              style={styles.moreTextButton}
+            >
+              <Text style={styles.moreButtonText}>अधिक</Text>
+              <MaterialIcons name="chevron-right" size={16} color={COLORS.textSecondary} />
+            </TouchableOpacity>
           </View>
+          <FlatList
+            data={previousReports}
+            renderItem={renderReportCard}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.reportsList}
+            scrollEnabled={true}
+          />
         </View>
       </ScrollView>
     );
@@ -218,18 +265,38 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
           setShowReportDetails(true);
         }}
       >
-        <View style={styles.reportIconContainer}>
+        <View style={styles.reportHeader}>
+          <View style={styles.reportIconContainer}>
+            <LinearGradient
+              colors={colors}
+              style={styles.reportIcon}
+            >
+              <MaterialIcons name={icon as any} size={24} color="white" />
+            </LinearGradient>
+          </View>
           <LinearGradient
-            colors={colors}
-            style={styles.reportIcon}
+            colors={item.status === 'सामान्य' ? ['#10B981', '#047857'] : ['#F59E0B', '#D97706']}
+            style={styles.statusIndicator}
           >
-            <MaterialIcons name={icon as any} size={18} color="white" />
+            <Text style={styles.statusText}>{item.status}</Text>
           </LinearGradient>
         </View>
         <View style={styles.reportContent}>
           <Text style={styles.reportTitle} numberOfLines={2}>{item.type}</Text>
-          <Text style={styles.reportSubtitle} numberOfLines={1}>{item.date}</Text>
-          <Text style={styles.reportDescription} numberOfLines={1}>{item.doctor}</Text>
+          <View style={styles.reportInfo}>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="event" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.reportSubtitle} numberOfLines={1}>{item.date}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="person" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.reportDescription} numberOfLines={1}>{item.doctor}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <MaterialIcons name="location-on" size={16} color={COLORS.textSecondary} />
+              <Text style={styles.reportDescription} numberOfLines={1}>{item.location}</Text>
+            </View>
+          </View>
         </View>
         <TouchableOpacity 
           style={styles.detailButton}
@@ -266,17 +333,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
           </Text>
           <TouchableOpacity 
             style={styles.notificationButton}
-            onPress={() => Alert.alert('सूचनाएं', 'कोई नई सूचना नहीं है।')}
+            onPress={() => {
+              Alert.alert('सूचनाएं', notificationCount > 0 ? 'आपकी ' + notificationCount + ' नई सूचनाएं हैं।' : 'कोई नई सूचना नहीं है।');
+              if (notificationCount > 0) {
+                setNotificationCount(0); // Clear notifications when viewed
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.notificationContainer}>
-              <Ionicons name="notifications" size={24} color={COLORS.white} />
-              <LinearGradient
-                colors={['#e74c3c', '#c0392b']}
-                style={styles.notificationBadge}
-              >
-                <Text style={styles.notificationCount}>3</Text>
-              </LinearGradient>
+              <Ionicons 
+                name={notificationCount > 0 ? "notifications" : "notifications-outline"} 
+                size={24} 
+                color={COLORS.white} 
+              />
+              {notificationCount > 0 && (
+                <LinearGradient
+                  colors={['#e74c3c', '#c0392b']}
+                  style={styles.notificationBadge}
+                >
+                  <Text style={styles.notificationCount}>{notificationCount}</Text>
+                </LinearGradient>
+              )}
             </View>
           </TouchableOpacity>
         </View>
@@ -401,44 +479,76 @@ const styles = StyleSheet.create({
   },
   welcomeSection: {
     paddingVertical: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   welcomeText: {
     fontSize: FONTS.sizes.lg,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
+    marginRight: SPACING.xs,
   },
   userName: {
-    fontSize: FONTS.sizes.xl,
+    fontSize: FONTS.sizes.lg,
     fontWeight: FONTS.weights.bold,
     color: COLORS.textPrimary,
   },
   sectionContainer: {
     marginBottom: SPACING.xl,
   },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
   sectionTitle: {
     fontSize: FONTS.sizes.lg,
     fontWeight: FONTS.weights.semibold,
     color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
+  },
+  moreButton: {
+    padding: SPACING.xs,
+    borderRadius: BORDER_RADIUS.round,
+  },
+  moreTextButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary + '10',
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+  },
+  moreButtonText: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    marginRight: SPACING.xs,
+    fontWeight: FONTS.weights.medium,
   },
   campsList: {
     paddingRight: SPACING.lg,
   },
   campCard: {
     borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.lg,
+    padding: SPACING.sm,
     marginRight: SPACING.md,
-    width: 320,
-    borderLeftWidth: 5,
-    borderLeftColor: COLORS.primary,
+    width: 310,
+    backgroundColor: COLORS.white,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.4)',
     ...SHADOWS.large,
     elevation: 8,
+    transform: [{ translateY: 0 }],
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.xs,
   },
   statusBadge: {
     paddingHorizontal: SPACING.sm,
@@ -454,19 +564,15 @@ const styles = StyleSheet.create({
   cardInfo: {
     marginBottom: 0,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: BORDER_RADIUS.round,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.sm,
-    ...SHADOWS.small,
+    backgroundColor: COLORS.white,
+    ...SHADOWS.medium,
   },
   iconContainerSmall: {
     width: 28,
@@ -490,16 +596,17 @@ const styles = StyleSheet.create({
     // Icon styling handled by vector icon props
   },
   campDate: {
-    fontSize: FONTS.sizes.lg,
+    fontSize: FONTS.sizes.base,
     fontWeight: FONTS.weights.bold,
     color: COLORS.primary,
-    marginBottom: SPACING.xs,
+    marginBottom: 0,
   },
   campType: {
-    fontSize: FONTS.sizes.base,
+    fontSize: FONTS.sizes.sm,
     fontWeight: FONTS.weights.semibold,
     color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    lineHeight: 20,
   },
   campLocation: {
     fontSize: FONTS.sizes.sm,
@@ -512,68 +619,74 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reportsList: {
-    paddingRight: SPACING.lg,
-  },
-  reportsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  reportCardWrapper: {
-    width: '48%',
-    marginBottom: SPACING.md,
+    paddingBottom: SPACING.lg,
   },
   reportCard: {
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.lg,
-    width: '100%',
-    height: 180,
+    width: '85%',
+    aspectRatio: 1,
+    marginHorizontal: '7.5%',
+    marginBottom: SPACING.md,
+    borderWidth: 0.4,
+    borderColor: 'rgba(0, 0, 0, 0.4)',
     ...SHADOWS.large,
     elevation: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  reportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.md,
   },
   reportIconContainer: {
-    marginBottom: SPACING.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   reportIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     ...SHADOWS.medium,
   },
+  statusIndicator: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs / 2,
+    borderRadius: BORDER_RADIUS.round,
+    ...SHADOWS.small,
+  },
   reportContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
-    marginBottom: SPACING.sm,
-    paddingHorizontal: SPACING.xs,
   },
   reportTitle: {
-    fontSize: FONTS.sizes.sm,
+    fontSize: FONTS.sizes.base,
     fontWeight: FONTS.weights.bold,
     color: COLORS.textPrimary,
-    textAlign: 'center',
-    marginBottom: SPACING.xs / 2,
-    lineHeight: 18,
+    marginBottom: SPACING.md,
+    lineHeight: 20,
+  },
+  reportInfo: {
+    flex: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
   },
   reportSubtitle: {
-    fontSize: FONTS.sizes.xs,
+    fontSize: FONTS.sizes.sm,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.xs / 2,
+    marginLeft: SPACING.xs,
+    flex: 1,
   },
   reportDescription: {
-    fontSize: 10,
+    fontSize: FONTS.sizes.sm,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 14,
+    marginLeft: SPACING.xs,
+    flex: 1,
   },
   detailButton: {
     flexDirection: 'row',
@@ -583,30 +696,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary + '30',
     borderRadius: BORDER_RADIUS.sm,
-    paddingVertical: SPACING.xs / 2,
-    paddingHorizontal: SPACING.xs,
-    marginTop: SPACING.xs / 2,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    marginTop: SPACING.md,
+    alignSelf: 'center',
   },
   detailButtonText: {
-    fontSize: 10,
+    fontSize: FONTS.sizes.xs,
     color: COLORS.primary,
     fontWeight: FONTS.weights.semibold,
-    marginRight: SPACING.xs / 3,
-  },
-  statusIndicator: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.round,
-    ...SHADOWS.small,
+    marginRight: SPACING.xs,
   },
   statusIndicatorCompact: {
     paddingHorizontal: SPACING.xs,
     paddingVertical: SPACING.xs / 2,
     borderRadius: BORDER_RADIUS.round,
     ...SHADOWS.small,
-  },
-  reportInfo: {
-    marginBottom: SPACING.md,
   },
   reportInfoCompact: {
     marginBottom: SPACING.sm,
@@ -617,12 +722,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.sm,
     paddingLeft: SPACING.xs,
-  },
-  reportHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.xs,
   },
   reportType: {
     fontSize: FONTS.sizes.base,

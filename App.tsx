@@ -190,7 +190,7 @@ export default function App() {
               स्वास्थ्य और परिवार कल्याण मंत्रालय
             </Text>
             <Text style={styles.footerSubtext}>
-              भारत सरकार की पहल
+              छत्तीसगढ़ सरकार की पहल
             </Text>
             <Text style={styles.versionText}>संस्करण 1.0.0</Text>
             <Text style={styles.poweredByText}>Powered by SSIPMT, RAIPUR</Text>
@@ -212,9 +212,10 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + SPACING.md : SPACING.lg,
-    paddingBottom: SPACING.lg,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + SPACING.xl * 2 : SPACING.xl * 3,
+    paddingBottom: SPACING.xl * 2,
     borderBottomLeftRadius: BORDER_RADIUS.xl,
     borderBottomRightRadius: BORDER_RADIUS.xl,
     backgroundColor: COLORS.primary,
@@ -288,12 +289,18 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     textAlign: 'center',
     marginBottom: SPACING.xs,
+    width: '100%',
+    flexWrap: 'wrap',
+    lineHeight: 18,
   },
   versionText: {
     fontSize: FONTS.sizes.xs,
     color: COLORS.textLight,
     textAlign: 'center',
     marginBottom: SPACING.xs,
+    width: '100%',
+    flexWrap: 'wrap',
+    lineHeight: 18,
   },
   poweredByText: {
     fontSize: FONTS.sizes.xs,

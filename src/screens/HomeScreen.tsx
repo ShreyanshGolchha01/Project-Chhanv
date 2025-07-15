@@ -16,6 +16,7 @@ import { Ionicons, MaterialIcons, FontAwesome5, Entypo } from '@expo/vector-icon
 import SchemesScreen from './SchemesScreen';
 import ProfileScreen from './ProfileScreen';
 import ReportDetailsScreen from './ReportDetailsScreen';
+import NotificationScreen from './NotificationScreen';
 
 // Sample data for next camps
 const nextCamps = [
@@ -24,21 +25,24 @@ const nextCamps = [
     date: '15 अगस्त 2025',
     location: 'प्राथमिक स्वास्थ्य केंद्र, रायपुर',
     time: 'सुबह 9:00 बजे',
-    type: 'व्यापक स्वास्थ्य जांच शिविर'
+    type: 'व्यापक स्वास्थ्य जांच शिविर',
+    doctor: 'डॉ. राजेश कुमार'
   },
   {
     id: 2,
     date: '22 अगस्त 2025',
     location: 'सामुदायिक केंद्र, दुर्ग',
     time: 'सुबह 10:00 बजे',
-    type: 'संपूर्ण परिवारिक स्वास्थ्य शिविर'
+    type: 'संपूर्ण परिवारिक स्वास्थ्य शिविर',
+    doctor: 'डॉ. सुनीता वर्मा'
   },
   {
     id: 3,
     date: '29 अगस्त 2025',
     location: 'जिला अस्पताल, बिलासपुर',
     time: 'सुबह 8:30 बजे',
-    type: 'मल्टी-स्पेशलिटी हेल्थ कैंप'
+    type: 'मल्टी-स्पेशलिटी हेल्थ कैंप',
+    doctor: 'डॉ. अमित शर्मा'
   }
 ];
 
@@ -89,6 +93,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showReportDetails, setShowReportDetails] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [notificationCount, setNotificationCount] = useState(3);
   
@@ -96,21 +101,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   const flatListRef = React.useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto scroll function
-  React.useEffect(() => {
-    const scrollInterval = setInterval(() => {
-      if (flatListRef.current && nextCamps.length > 0) {
-        const nextIndex = (currentIndex + 1) % nextCamps.length;
-        flatListRef.current.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
-        setCurrentIndex(nextIndex);
-      }
-    }, 3500); // Change slide every 4 seconds
+  // Auto scroll function - disabled
+  // React.useEffect(() => {
+  //   const scrollInterval = setInterval(() => {
+  //     if (flatListRef.current && nextCamps.length > 0) {
+  //       const nextIndex = (currentIndex + 1) % nextCamps.length;
+  //       flatListRef.current.scrollToIndex({
+  //         index: nextIndex,
+  //         animated: true,
+  //       });
+  //       setCurrentIndex(nextIndex);
+  //     }
+  //   }, 3500); // Change slide every 4 seconds
 
-    return () => clearInterval(scrollInterval);
-  }, [currentIndex]);
+  //   return () => clearInterval(scrollInterval);
+  // }, [currentIndex]);
 
   const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -121,6 +126,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
   };
 
   const renderContent = () => {
+    if (showNotifications) {
+      return <NotificationScreen onBack={() => setShowNotifications(false)} />;
+    }
+    
     if (showReportDetails) {
       return <ReportDetailsScreen onBack={() => setShowReportDetails(false)} reportData={selectedReport} />;
     }
@@ -139,7 +148,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
 
     // Default home content
     return (
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
+      >
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeText}>नमस्ते,</Text>
@@ -164,6 +177,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
             snapToOffsets={nextCamps.map((_, index) => index * (310 + SPACING.md))}
             onScrollToIndexFailed={() => {}}
             pagingEnabled={false}
+            nestedScrollEnabled={true}
           />
         </View>
 
@@ -185,7 +199,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.reportsList}
-            scrollEnabled={true}
+            scrollEnabled={false}
+            nestedScrollEnabled={true}
           />
         </View>
       </ScrollView>
@@ -220,6 +235,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
             <Ionicons name="location" size={16} color={COLORS.primary} />
           </LinearGradient>
           <Text style={styles.campLocation}>{item.location}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <LinearGradient
+            colors={[COLORS.healthGreen + '20', COLORS.healthGreen + '10']}
+            style={styles.iconContainer}
+          >
+            <FontAwesome5 name="user-md" size={14} color={COLORS.healthGreen} />
+          </LinearGradient>
+          <Text style={styles.campDoctor}>{item.doctor}</Text>
         </View>
         <View style={styles.infoRow}>
           <LinearGradient
@@ -330,121 +354,147 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ userName, onLogout }) => {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>
-            {showReportDetails ? 'विस्तृत रिपोर्ट' : 
-             showProfile ? 'प्रोफाइल' : 
-             showSchemes ? 'सरकारी योजनाएं' : 
-             'स्वास्थ्य पोर्टल'}
-          </Text>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => {
-              Alert.alert('सूचनाएं', notificationCount > 0 ? 'आपकी ' + notificationCount + ' नई सूचनाएं हैं।' : 'कोई नई सूचना नहीं है।');
-              if (notificationCount > 0) {
-                setNotificationCount(0); // Clear notifications when viewed
-              }
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={styles.notificationContainer}>
-              <Ionicons 
-                name={notificationCount > 0 ? "notifications" : "notifications-outline"} 
-                size={24} 
-                color={COLORS.white} 
-              />
-              {notificationCount > 0 && (
-                <LinearGradient
-                  colors={['#e74c3c', '#c0392b']}
-                  style={styles.notificationBadge}
-                >
-                  <Text style={styles.notificationCount}>{notificationCount}</Text>
-                </LinearGradient>
-              )}
-            </View>
-          </TouchableOpacity>
+          {showNotifications ? (
+            // Header for notification screen with back button
+            <>
+              <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => setShowNotifications(false)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>सूचनाएं</Text>
+              <View style={styles.headerSpacer} />
+            </>
+          ) : (
+            // Normal header layout
+            <>
+              <Text style={styles.headerTitle}>
+                {showReportDetails ? 'विस्तृत रिपोर्ट' : 
+                 showProfile ? 'प्रोफाइल' : 
+                 showSchemes ? 'सरकारी योजनाएं' : 
+                 'स्वास्थ्य पोर्टल'}
+              </Text>
+              <TouchableOpacity 
+                style={styles.notificationButton}
+                onPress={() => {
+                  setShowNotifications(true);
+                  setActiveTab('home');
+                  setShowSchemes(false);
+                  setShowProfile(false);
+                  setShowReports(false);
+                  setShowReportDetails(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.notificationContainer}>
+                  <Ionicons 
+                    name={notificationCount > 0 ? "notifications" : "notifications-outline"} 
+                    size={24} 
+                    color={COLORS.white} 
+                  />
+                  {notificationCount > 0 && (
+                    <LinearGradient
+                      colors={['#e74c3c', '#c0392b']}
+                      style={styles.notificationBadge}
+                    >
+                      <Text style={styles.notificationCount}>{notificationCount}</Text>
+                    </LinearGradient>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </LinearGradient>
 
       {/* Dynamic Content */}
       {renderContent()}
 
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'home' && styles.activeNavItem]}
-          onPress={() => {
-            setActiveTab('home');
-            setShowSchemes(false);
-            setShowProfile(false);
-            setShowReportDetails(false);
-          }}
-        >
-          <Ionicons 
-            name={activeTab === 'home' ? "home" : "home-outline"} 
-            size={22} 
-            color={activeTab === 'home' ? COLORS.primary : COLORS.textSecondary}
-            style={[styles.navIcon, activeTab === 'home' && styles.activeNavIcon]} 
-          />
-          <Text style={[styles.navText, activeTab === 'home' && styles.activeNavText]}>होम</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'scheme' && styles.activeNavItem]}
-          onPress={() => {
-            setActiveTab('scheme');
-            setShowSchemes(true);
-            setShowProfile(false);
-            setShowReports(false);
-            setShowReportDetails(false);
-          }}
-        >
-          <MaterialIcons 
-            name="assignment" 
-            size={22} 
-            color={activeTab === 'scheme' ? COLORS.primary : COLORS.textSecondary}
-            style={[styles.navIcon, activeTab === 'scheme' && styles.activeNavIcon]} 
-          />
-          <Text style={[styles.navText, activeTab === 'scheme' && styles.activeNavText]}>योजना</Text>
-        </TouchableOpacity>
+      {/* Bottom Navigation - Hide when notification screen is open */}
+      {!showNotifications && (
+        <View style={styles.bottomNav}>
+          <TouchableOpacity 
+            style={[styles.navItem, activeTab === 'home' && styles.activeNavItem]}
+            onPress={() => {
+              setActiveTab('home');
+              setShowSchemes(false);
+              setShowProfile(false);
+              setShowReportDetails(false);
+              setShowNotifications(false);
+            }}
+          >
+            <Ionicons 
+              name={activeTab === 'home' ? "home" : "home-outline"} 
+              size={22} 
+              color={activeTab === 'home' ? COLORS.primary : COLORS.textSecondary}
+              style={[styles.navIcon, activeTab === 'home' && styles.activeNavIcon]} 
+            />
+            <Text style={[styles.navText, activeTab === 'home' && styles.activeNavText]}>होम</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.navItem, activeTab === 'scheme' && styles.activeNavItem]}
+            onPress={() => {
+              setActiveTab('scheme');
+              setShowSchemes(true);
+              setShowProfile(false);
+              setShowReports(false);
+              setShowReportDetails(false);
+              setShowNotifications(false);
+            }}
+          >
+            <MaterialIcons 
+              name="assignment" 
+              size={22} 
+              color={activeTab === 'scheme' ? COLORS.primary : COLORS.textSecondary}
+              style={[styles.navIcon, activeTab === 'scheme' && styles.activeNavIcon]} 
+            />
+            <Text style={[styles.navText, activeTab === 'scheme' && styles.activeNavText]}>योजना</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'reports' && styles.activeNavItem]}
-          onPress={() => {
-            setActiveTab('reports');
-            setShowReports(true);
-            setShowSchemes(false);
-            setShowProfile(false);
-            setShowReportDetails(false);
-          }}
-        >
-          <MaterialIcons 
-            name="description" 
-            size={22} 
-            color={activeTab === 'reports' ? COLORS.primary : COLORS.textSecondary}
-            style={[styles.navIcon, activeTab === 'reports' && styles.activeNavIcon]} 
-          />
-          <Text style={[styles.navText, activeTab === 'reports' && styles.activeNavText]}>रिपोर्ट्स</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.navItem, activeTab === 'profile' && styles.activeNavItem]}
-          onPress={() => {
-            setActiveTab('profile');
-            setShowProfile(true);
-            setShowSchemes(false);
-            setShowReports(false);
-            setShowReportDetails(false);
-          }}
-        >
-          <Ionicons 
-            name={activeTab === 'profile' ? "person" : "person-outline"} 
-            size={22} 
-            color={activeTab === 'profile' ? COLORS.primary : COLORS.textSecondary}
-            style={[styles.navIcon, activeTab === 'profile' && styles.activeNavIcon]} 
-          />
-          <Text style={[styles.navText, activeTab === 'profile' && styles.activeNavText]}>प्रोफाइल</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity 
+            style={[styles.navItem, activeTab === 'reports' && styles.activeNavItem]}
+            onPress={() => {
+              setActiveTab('reports');
+              setShowReports(true);
+              setShowSchemes(false);
+              setShowProfile(false);
+              setShowReportDetails(false);
+              setShowNotifications(false);
+            }}
+          >
+            <MaterialIcons 
+              name="description" 
+              size={22} 
+              color={activeTab === 'reports' ? COLORS.primary : COLORS.textSecondary}
+              style={[styles.navIcon, activeTab === 'reports' && styles.activeNavIcon]} 
+            />
+            <Text style={[styles.navText, activeTab === 'reports' && styles.activeNavText]}>रिपोर्ट्स</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.navItem, activeTab === 'profile' && styles.activeNavItem]}
+            onPress={() => {
+              setActiveTab('profile');
+              setShowProfile(true);
+              setShowSchemes(false);
+              setShowReports(false);
+              setShowReportDetails(false);
+              setShowNotifications(false);
+            }}
+          >
+            <Ionicons 
+              name={activeTab === 'profile' ? "person" : "person-outline"} 
+              size={22} 
+              color={activeTab === 'profile' ? COLORS.primary : COLORS.textSecondary}
+              style={[styles.navIcon, activeTab === 'profile' && styles.activeNavIcon]} 
+            />
+            <Text style={[styles.navText, activeTab === 'profile' && styles.activeNavText]}>प्रोफाइल</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -455,19 +505,29 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.xxl,
+    // paddingBottom: SPACING.l,
     paddingHorizontal: SPACING.lg,
+    justifyContent: 'center',
     ...SHADOWS.medium,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: 50,
   },
   headerTitle: {
     fontSize: FONTS.sizes.lg,
     fontWeight: FONTS.weights.bold,
     color: COLORS.white,
+  },
+  backButton: {
+    padding: SPACING.sm,
+    borderRadius: BORDER_RADIUS.round,
+  },
+  headerSpacer: {
+    width: 48, // Same width as back button to center the title
   },
   notificationButton: {
     padding: SPACING.xs,
@@ -557,15 +617,12 @@ const styles = StyleSheet.create({
   },
   campCard: {
     borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.sm,
+    padding: SPACING.lg,
     marginRight: SPACING.md,
     width: 310,
     backgroundColor: COLORS.white,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.4)',
-    ...SHADOWS.large,
-    elevation: 8,
-    transform: [{ translateY: 0 }],
+    borderWidth: 1,
+    borderColor: 'rgba(205, 204, 204, 0.63)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -638,6 +695,12 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
     color: COLORS.textSecondary,
     flex: 1,
+  },
+  campDoctor: {
+    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    flex: 1,
+    fontWeight: FONTS.weights.medium,
   },
   campTime: {
     fontSize: FONTS.sizes.sm,

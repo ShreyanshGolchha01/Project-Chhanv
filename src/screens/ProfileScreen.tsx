@@ -417,25 +417,25 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onBack, onLogout }) => {
 
         {/* Family Members Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>परिवारिक सदस्य</Text>
-          {familyMembers.map(renderFamilyMember)}
-          
-          {/* Add Member Button */}
-          <TouchableOpacity 
-            style={styles.addMemberButton}
-            onPress={() => setShowAddMemberModal(true)}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={COLORS.gradients.secondary.colors}
-              start={COLORS.gradients.secondary.start}
-              end={COLORS.gradients.secondary.end}
-              style={styles.addMemberGradient}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>परिवारिक सदस्य</Text>
+            <TouchableOpacity 
+              style={styles.addIconButton}
+              onPress={() => setShowAddMemberModal(true)}
+              activeOpacity={0.8}
             >
-              <AntDesign name="plus" size={24} color={COLORS.white} />
-              <Text style={styles.addMemberText}>नया सदस्य जोड़ें</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={COLORS.gradients.primary.colors}
+                start={COLORS.gradients.primary.start}
+                end={COLORS.gradients.primary.end}
+                style={styles.addIconGradient}
+              >
+                <AntDesign name="plus" size={18} color={COLORS.white} />
+                <Text style={styles.addIconText}>नया सदस्य जोड़ें</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+          {familyMembers.map(renderFamilyMember)}
         </View>
 
         {/* Logout Section */}
@@ -455,9 +455,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onBack, onLogout }) => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#e74c3c', '#c0392b']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              colors={COLORS.gradients.primary.colors}
+              start={COLORS.gradients.primary.start}
+              end={COLORS.gradients.primary.end}
               style={styles.logoutGradient}
             >
               <MaterialIcons name="logout" size={24} color={COLORS.white} />
@@ -490,6 +490,30 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weights.bold,
     color: COLORS.textPrimary,
     marginBottom: SPACING.md,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  addIconButton: {
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    ...SHADOWS.small,
+  },
+  addIconGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+  },
+  addIconText: {
+    fontSize: FONTS.sizes.sm,
+    fontWeight: FONTS.weights.medium,
+    color: COLORS.white,
+    marginLeft: SPACING.xs,
   },
   employeeCard: {
     borderRadius: BORDER_RADIUS.xl,
@@ -648,25 +672,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: FONTS.weights.medium,
     marginLeft: SPACING.xs,
-  },
-  addMemberButton: {
-    marginTop: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
-    overflow: 'hidden',
-    ...SHADOWS.medium,
-  },
-  addMemberGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-  },
-  addMemberText: {
-    fontSize: FONTS.sizes.base,
-    fontWeight: FONTS.weights.bold,
-    color: COLORS.white,
-    marginLeft: SPACING.sm,
   },
   modalOverlay: {
     flex: 1,
